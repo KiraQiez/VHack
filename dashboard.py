@@ -1,53 +1,77 @@
-from flask import Flask, render_template, session, redirect, url_for, jsonify
+from flask import Flask, render_template, request, jsonify
 import requests
-import random
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
 
-# OpenWeatherMap API Key
-WEATHER_API_KEY = "6dc82925be8c87db12b22ab278fc1e93"
-
-# Fetch Weather Data
-def fetch_weather(city):
-    url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={WEATHER_API_KEY}&units=metric"
-    response = requests.get(url)
+# Fetch Weather Data from Open-Meteo
+def fetch_weather(latitude, longitude):
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": "temperature_2m_mean,precipitation_sum,relative_humidity_2m_mean",
+        "timezone": "Asia/Kuala_Lumpur"
+    }
+    response = requests.get(url, params=params)
     data = response.json()
-    if data.get("main"):
-        return {
-            "city": city,
-            "temperature": data["main"]["temp"],
-            "description": data["weather"][0]["description"],
-            "icon": data["weather"][0]["icon"]
-        }
-    return None
+    return data
+
 
 @app.route("/")
 def index():
-
-    city = "Kuala Lumpur"
-    weather_data = fetch_weather(city)
-    return render_template("index.html", weather=weather_data)
+    return render_template("index.html")
 
 # API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
 def get_weather_data():
-    data = {
-        "temperature": [random.randint(20, 40) for _ in range(7)],
-        "humidity": [random.randint(50, 90) for _ in range(7)],
-        "days": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    }
-    return jsonify(data)
+    latitude = request.args.get("lat", 3.1390, type=float)
+    longitude = request.args.get("lng", 101.6869, type=float)
 
-# API: Farm Locations for Map
+    print(f"[DEBUG] Fetching weather data for lat={latitude}, lng={longitude}")  # Debugging
+    weather_data = fetch_weather(latitude, longitude)
+    
+    return jsonify(weather_data)
+
 @app.route('/get_farm_locations')
 def get_farm_locations():
-    farms = [
-        {"name": "Farm A", "lat": 3.1390, "lng": 101.6869},
-        {"name": "Farm B", "lat": 2.7456, "lng": 101.7072},
-        {"name": "Farm C", "lat": 1.4927, "lng": 103.7414}
-    ]
+    latitude = request.args.get("lat", type=float)
+    longitude = request.args.get("lng", type=float)
+
+    if latitude is None or longitude is None:
+        return jsonify({"error": "Latitude and Longitude are required"}), 400
+
+    osm_url = "http://overpass-api.de/api/interpreter"
+    
+    # Overpass query to find farmland within a 10km radius
+    query = f"""
+    [out:json];
+    (
+      node["landuse"="farmland"](around:10000, {latitude}, {longitude});
+      way["landuse"="farmland"](around:10000, {latitude}, {longitude});
+      relation["landuse"="farmland"](around:10000, {latitude}, {longitude});
+    );
+    out center;
+    """
+
+    response = requests.get(osm_url, params={"data": query})
+
+    try:
+        data = response.json()
+    except requests.exceptions.JSONDecodeError:
+        return jsonify({"error": "Invalid JSON response from OSM"}), 500
+
+    farms = []
+    for element in data.get("elements", []):
+        if "lat" in element and "lon" in element:
+            farms.append({
+                "name": element.get("tags", {}).get("name", "Unnamed Farm"),
+                "lat": element["lat"],
+                "lng": element["lon"]
+            })
+
     return jsonify(farms)
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
