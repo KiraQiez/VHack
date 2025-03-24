@@ -1,42 +1,52 @@
-let map; // Declare map globally
+let marker; // Store user marker
+let userLat, userLng; // 🔹 Declare global variables
 
-document.addEventListener("DOMContentLoaded", function () {
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
+// Initialize the map (Malaysia center, zoom 6)
+var map = L.map('map').setView([4.2105, 101.9758], 6);
 
-        console.log("[DEBUG] User Location:", userLat, userLng);
+// Load OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18,
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
 
-        initializeMap(userLat, userLng);  // ✅ Initialize map first
-        fetchWeatherData(userLat, userLng);
+// ✅ Get User Location & Fetch Farms in Their State
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      userLat = position.coords.latitude;
+      userLng = position.coords.longitude;
 
-        // ✅ Ensure farms are fetched after the map is ready
-        setTimeout(() => {
-          fetchFarmLocations(userLat, userLng);
-        }, 500);
-      },
-      (error) => {
-        console.error("[ERROR] Failed to get user location:", error.message);
-        alert("Unable to fetch location. Using default (Kuala Lumpur).");
+      console.log("[DEBUG] User Location:", userLat, userLng);
 
-        initializeMap(3.1390, 101.6869);
-        fetchWeatherData(3.1390, 101.6869);
+      // Add a green pin for user location
+      L.marker([userLat, userLng], {
+        icon: L.icon({
+          iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+          iconSize: [32, 32],
+          iconAnchor: [16, 32],
+          popupAnchor: [0, -32]
+        })
+      }).bindPopup("📍 You are here").addTo(map);
 
-        setTimeout(() => {
-          fetchFarmLocations(3.1390, 101.6869);
-        }, 500);
-      }
-    );
-  } else {
-    console.error("[ERROR] Geolocation not supported.");
-  }
-});
+      // ✅ Get the user's state and fetch farms there
+      getUserState(userLat, userLng);
+      fetchWeatherData(userLat, userLng);
+    },
+    (error) => {
+      console.error("[ERROR] Geolocation failed:", error);
+      alert("Failed to get your location.");
+    }
+  );
+} else {
+  console.warn("[WARNING] Geolocation not supported.");
+  alert("Geolocation is not supported by your browser.");
+}
 
 const navBar = document.querySelector("nav"),
   menuBtns = document.querySelectorAll(".menu-icon"),
   overlay = document.querySelector(".overlay");
+
 menuBtns.forEach((menuBtn) => {
   menuBtn.addEventListener("click", () => {
     navBar.classList.toggle("open");
@@ -49,12 +59,29 @@ overlay.addEventListener("click", () => {
 // ✅ Function to initialize the map
 function initializeMap(lat, lng) {
   if (!map) {
-    map = L.map("map").setView([lat, lng], 10);
+    map = L.map("map").setView([lat, lng], 10); // ✅ No automatic zooming
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
     console.log("[DEBUG] Map initialized.");
   }
+}
+
+// ✅ Add user location marker (Green Pin)
+function addUserMarker(lat, lng) {
+  if (marker) {
+    map.removeLayer(marker);
+  }
+  marker = L.marker([lat, lng], {
+    icon: L.icon({
+      iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+      iconSize: [32, 32],
+      iconAnchor: [16, 32],
+      popupAnchor: [0, -32]
+    })
+  }).addTo(map).bindPopup("<b>You are here</b>").openPopup();
+
+  console.log("[DEBUG] User location marked.");
 }
 
 // Fetch and update weather chart
@@ -75,7 +102,6 @@ function fetchWeatherData(lat, lng) {
 
       const ctx = document.getElementById("weatherChart").getContext("2d");
 
-      // Destroy chart if it exists
       if (window.weatherChart instanceof Chart) {
         window.weatherChart.destroy();
       }
@@ -122,40 +148,90 @@ function fetchWeatherData(lat, lng) {
     .catch(error => console.error("[ERROR] Fetching weather data:", error));
 }
 
-// ✅ Function to fetch farm locations
-function fetchFarmLocations(lat, lng) {
-  console.log("[DEBUG] Fetching farm locations for lat:", lat, "lng:", lng);
+// ✅ Fetch the user's state using reverse geocoding
+function getUserState(lat, lng) {
+  console.log("[DEBUG] Getting user state...");
 
-  fetch(`/get_farm_locations?lat=${lat}&lng=${lng}`)
+  const reverseGeocodeURL = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=5&addressdetails=1`;
+
+  fetch(reverseGeocodeURL)
+    .then(response => response.json())
+    .then(data => {
+      if (data && data.address && data.address.state) {
+        let userState = data.address.state;
+        console.log("[DEBUG] User State:", userState);
+        fetchFarmLocations(userState); // Fetch farms in the user's state
+      } else {
+        console.warn("[WARNING] Could not determine user state.");
+      }
+    })
+    .catch(error => console.error("[ERROR] Reverse geocoding failed:", error));
+}
+
+
+// ✅ Fetch farms in the user's state
+function fetchFarmLocations(state) {
+  console.log(`[DEBUG] Fetching farms in state: ${state}`);
+
+  fetch(`/get_farm_locations?state=${encodeURIComponent(state)}`)
     .then(response => response.json())
     .then(data => {
       console.log("[DEBUG] Farm Locations:", data);
       if (data.error) {
-        console.error("[ERROR] Fetching farm locations:", data.error);
+        console.warn(`[WARNING] No farms found in ${state}.`);
+        alert(`No farms found in ${state}.`);
       } else {
-        displayFarmsOnMap(data);
+        if (typeof userLat === "undefined" || typeof userLng === "undefined") {  // 🔹 Use global variables
+          console.error("[ERROR] User location (userLat, userLng) is undefined. Cannot display farms.");
+        } else {
+          displayFarmsOnMap(data); // ✅ Fix: Pass the actual `data` (farms list)
+        }
       }
     })
     .catch(error => console.error("[ERROR] Fetching farm locations:", error));
 }
 
-// ✅ Function to display farms on the map
+
+// ✅ Display farms on the map with red pins
 function displayFarmsOnMap(farms) {
   if (!map) {
     console.error("[ERROR] Map not initialized yet.");
     return;
   }
 
-  if (farms.length === 0) {
-    console.warn("[WARNING] No farms found.");
-    return;
+  // ✅ Remove only farm markers, NOT the user marker
+  map.eachLayer(layer => {
+    if (layer instanceof L.Marker && layer !== marker) {
+      map.removeLayer(layer);
+    }
+  });
+
+  // ✅ Re-add user marker if missing
+  if (!marker) {
+    console.warn("[WARNING] User marker missing. Re-adding...");
+    addUserMarker(userLat, userLng);
   }
 
-  farms.forEach((farm) => {
-    L.marker([farm.lat, farm.lng])
-      .bindPopup(`<b>${farm.name}</b><br>Lat: ${farm.lat}, Lng: ${farm.lng}`)
-      .addTo(map);
+  // ✅ Validate farm data before adding markers
+  let validFarms = farms.filter(farm => farm.lat !== undefined && farm.lng !== undefined);
+  let invalidFarms = farms.filter(farm => farm.lat === undefined || farm.lng === undefined);
+
+  if (invalidFarms.length > 0) {
+    console.warn("[WARNING] Skipping invalid farm locations:", invalidFarms);
+  }
+
+  // ✅ Add farm markers
+  validFarms.forEach((farm) => {
+    L.marker([farm.lat, farm.lng], {
+      icon: L.icon({
+        iconUrl: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+        popupAnchor: [0, -32]
+      })
+    }).bindPopup(`<b>${farm.name}</b><br>Lat: ${farm.lat}, Lng: ${farm.lng}`).addTo(map);
   });
 
   console.log("[DEBUG] Farms displayed on map.");
 }
+

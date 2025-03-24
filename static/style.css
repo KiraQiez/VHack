@@ -238,6 +238,12 @@ p a:hover {
   align-items: center;
 }
 
+.card-title {
+  font-weight: bold;
+  font-size: large;
+  margin-bottom: 10px;
+}
+
 /* Weather Analytics Chart */
 #weatherChart {
   width: 100% !important;

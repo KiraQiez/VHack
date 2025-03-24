@@ -17,7 +17,6 @@ def fetch_weather(latitude, longitude):
     data = response.json()
     return data
 
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -35,21 +34,26 @@ def get_weather_data():
 
 @app.route('/get_farm_locations')
 def get_farm_locations():
-    latitude = request.args.get("lat", type=float)
-    longitude = request.args.get("lng", type=float)
-
-    if latitude is None or longitude is None:
-        return jsonify({"error": "Latitude and Longitude are required"}), 400
+    state = request.args.get("state")  # Get state name from frontend
+    if not state:
+        return jsonify({"error": "State name is required"}), 400
 
     osm_url = "http://overpass-api.de/api/interpreter"
-    
-    # Overpass query to find farmland within a 10km radius
+
+    # **Query to get all farmland in the specified state**
     query = f"""
-    [out:json];
+    [out:json][timeout:50];
+    area["name"="{state}"]->.state;
     (
-      node["landuse"="farmland"](around:10000, {latitude}, {longitude});
-      way["landuse"="farmland"](around:10000, {latitude}, {longitude});
-      relation["landuse"="farmland"](around:10000, {latitude}, {longitude});
+      node["landuse"="farmland"](area.state);
+      way["landuse"="farmland"](area.state);
+      relation["landuse"="farmland"](area.state);
+      
+      node["farmer"="yes"](area.state);
+      way["farmer"="yes"](area.state);
+      
+      node["agriculture"="yes"](area.state);
+      way["agriculture"="yes"](area.state);
     );
     out center;
     """
@@ -69,9 +73,19 @@ def get_farm_locations():
                 "lat": element["lat"],
                 "lng": element["lon"]
             })
+        elif "center" in element:
+            farms.append({
+                "name": element.get("tags", {}).get("name", "Unnamed Farm"),
+                "lat": element["center"]["lat"],
+                "lng": element["center"]["lon"]
+            })
+
+    print(f"[DEBUG] Farms found in {state}:", farms)  # Debugging Output
+
+    if not farms:
+        return jsonify({"error": f"No farms found in {state}"}), 404
 
     return jsonify(farms)
 
 if __name__ == "__main__":
     app.run(debug=True)
-    
