@@ -102,7 +102,6 @@ nav.open ~ .overlay {
   left: 260px;
   pointer-events: auto;
 }
-/* Form Container */
 .form-container {
   width: 450px;
   background: #fff;
@@ -115,20 +114,15 @@ nav.open ~ .overlay {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
-
 .form-container h2 {
   margin-bottom: 20px;
   color: #333;
 }
-
-/* Input Box */
 .input-box {
   position: relative;
   width: 100%;
   margin-bottom: 15px;
 }
-
 .input-box i {
   position: absolute;
   top: 50%;
@@ -137,7 +131,6 @@ nav.open ~ .overlay {
   font-size: 18px;
   color: #707070;
 }
-
 .input-box input {
   width: 100%;
   padding: 12px 10px 12px 40px;
@@ -146,12 +139,9 @@ nav.open ~ .overlay {
   font-size: 14px;
   outline: none;
 }
-
 .input-box input:focus {
   border-color: #4070f4;
 }
-
-/* Button */
 .btn {
   width: 100%;
   padding: 12px;
@@ -163,22 +153,17 @@ nav.open ~ .overlay {
   cursor: pointer;
   transition: 0.3s;
 }
-
 .btn:hover {
   background: #2856c0;
 }
-
-/* Links */
 p {
   margin-top: 10px;
   font-size: 14px;
 }
-
 p a {
   color: #4070f4;
   text-decoration: none;
 }
-
 p a:hover {
   text-decoration: underline;
 }
