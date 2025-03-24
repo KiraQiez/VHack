@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import google.generativeai as genai
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -23,7 +24,11 @@ def index():
 
 @app.route("/analytics")
 def analytics():
-    return render_template("analytics.html")  # Serve Analytics Page
+    return render_template("analytics.html")
+
+@app.route("/insights")
+def insights():
+    return render_template("insights.html")
 
 # API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
@@ -90,6 +95,29 @@ def get_farm_locations():
         return jsonify({"error": f"No farms found in {state}"}), 404
 
     return jsonify(farms)
+
+# Set up Google Gemini API Key
+GEMINI_API_KEY = "AIzaSyCCMqub_m4O8umGE_Rw_iuGIDkxPBl7QKE"
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Correct model name (Check from list_models output)
+MODEL_NAME = "gemini-1.5-flash-latest"  # Change based on available models
+
+# Function to interact with Gemini AI
+def get_agriculture_response(user_input):
+    try:
+        model = genai.GenerativeModel(MODEL_NAME)  # Use correct model
+        response = model.generate_content(user_input)  # Generate response
+        return response.text  # Extract text response
+    except Exception as e:
+        print("[ERROR] Gemini API Request Failed:", str(e))
+        return f"Error: {str(e)}"
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    user_message = request.json.get("message")
+    response = get_agriculture_response(user_message)
+    return jsonify({"reply": response})
 
 if __name__ == "__main__":
     app.run(debug=True)

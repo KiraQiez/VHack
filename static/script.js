@@ -270,4 +270,3 @@ function displayFarmsOnMap(farms) {
   console.log("[DEBUG] Farms displayed on map.");
   updateFarmStatistics(validFarms);
 }
-
