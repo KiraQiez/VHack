@@ -21,6 +21,10 @@ def fetch_weather(latitude, longitude):
 def index():
     return render_template("index.html")
 
+@app.route("/analytics")
+def analytics():
+    return render_template("analytics.html")  # Serve Analytics Page
+
 # API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
 def get_weather_data():

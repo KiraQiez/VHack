@@ -32,6 +32,7 @@ if (navigator.geolocation) {
       // ✅ Get the user's state and fetch farms there
       getUserState(userLat, userLng);
       fetchWeatherData(userLat, userLng);
+      fetchWeatherStatistics(userLat, userLng);
     },
     (error) => {
       console.error("[ERROR] Geolocation failed:", error);
@@ -41,6 +42,31 @@ if (navigator.geolocation) {
 } else {
   console.warn("[WARNING] Geolocation not supported.");
   alert("Geolocation is not supported by your browser.");
+}
+
+function fetchWeatherStatistics(lat, lng) {
+  console.log("[DEBUG] Fetching weather stats for:", lat, lng);
+
+  const weatherAPI = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_mean,relative_humidity_2m_mean,precipitation_sum&timezone=Asia/Kuala_Lumpur`;
+
+  fetch(weatherAPI)
+    .then(response => response.json())
+    .then(data => {
+      console.log("[DEBUG] Weather Data:", data);
+
+      // Extract today's weather data
+      const avgTemp = data.daily.temperature_2m_mean[0]; // First day's temp
+      const avgHumidity = data.daily.relative_humidity_2m_mean[0]; // First day's humidity
+      const rainfall = data.daily.precipitation_sum[0]; // First day's rainfall
+
+      // Update HTML
+      document.getElementById("avgTemp").textContent = `${avgTemp.toFixed(1)}°C`;
+      document.getElementById("avgHumidity").textContent = `${avgHumidity.toFixed(1)}%`;
+      document.getElementById("rainfall").textContent = `${rainfall.toFixed(1)} mm`;
+
+      console.log("[DEBUG] Weather stats updated!");
+    })
+    .catch(error => console.error("[ERROR] Fetching weather statistics:", error));
 }
 
 const navBar = document.querySelector("nav"),
@@ -191,6 +217,15 @@ function fetchFarmLocations(state) {
     .catch(error => console.error("[ERROR] Fetching farm locations:", error));
 }
 
+// ✅ Function to update farm statistics
+function updateFarmStatistics(farms) {
+  let totalFarms = farms.length;
+
+  // Update total farms count
+  document.getElementById("totalFarms").textContent = totalFarms;
+
+  console.log(`[DEBUG] Total Farms Displayed: ${totalFarms}`);
+}
 
 // ✅ Display farms on the map with red pins
 function displayFarmsOnMap(farms) {
@@ -233,5 +268,6 @@ function displayFarmsOnMap(farms) {
   });
 
   console.log("[DEBUG] Farms displayed on map.");
+  updateFarmStatistics(validFarms);
 }
 

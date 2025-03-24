@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Farming Dashboard</title>
+  <title>Farm Analytics & Data Insights</title>
   <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <!-- Boxicons CSS -->
@@ -30,11 +30,11 @@
       </div>
       <div class="sidebar-content">
         <ul class="lists">
-          <li class="list active"><a href="{{ url_for('index') }}" class="nav-link"><i class="bx bx-home-alt icon"></i><span class="link">Home</span></a></li>
+          <li class="list"><a href="{{ url_for('index') }}" class="nav-link"><i class="bx bx-home-alt icon"></i><span class="link">Home</span></a></li>
           <li class="list"><a href="#" class="nav-link"><i class="bx bx-cloud icon"></i><span class="link">Weather</span></a></li>
           <li class="list"><a href="#" class="nav-link"><i class="bx bx-camera icon"></i><span class="link">Crop Health</span></a></li>
           <li class="list"><a href="#" class="nav-link"><i class="bx bx-water icon"></i><span class="link">Irrigation</span></a></li>
-          <li class="list"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="bx bx-bar-chart-alt-2 icon"></i><span class="link">Analytics</span></a></li>
+          <li class="list active"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="bx bx-bar-chart-alt-2 icon"></i><span class="link">Analytics</span></a></li>
           <li class="list"><a href="#" class="nav-link"><i class="bx bx-bell icon"></i><span class="link">Notifications</span></a></li>
           <li class="list"><a href="#" class="nav-link"><i class="bx bx-user icon"></i><span class="link">Profile</span></a></li>
         </ul>
@@ -49,7 +49,7 @@
   <!-- Main Content -->
   <section class="content">
     <div class="container">
-      <h2 class="text-center mb-4 fw-bold">AI Farming Dashboard</h2><br>
+      <h2 class="text-center mb-4 fw-bold">Farm Analytics & Data Visualization</h2><br>
       
       <div class="row">
         <div class="col-md-6">
@@ -59,8 +59,19 @@
           </div>
         </div>
         <div class="col-md-6">
+            <div class="card shadow p-4">
+              <h5 class="card-title">📊 Farm Statistics</h5>
+              <div class="stats-container">
+                <div class="stat-card">🌾 Total Farms: <span id="totalFarms"></span></div>
+                <div class="stat-card">🌤 Avg Temp: <span id="avgTemp">--°C</span></div>
+                <div class="stat-card">💧 Avg Humidity: <span id="avgHumidity">--%</span></div>
+                <div class="stat-card">☔ Rainfall: <span id="rainfall">--mm</span></div>
+              </div>
+            </div>
+        </div>          
+        <div class="col-md-6">
           <div class="card shadow p-4">
-            <h5 class="card-title">📍 Farm Locations</h5>
+            <h5 class="card-title">📍Farm Locations</h5>
             <div id="map" style="height: 300px;"></div>
           </div>
         </div>
