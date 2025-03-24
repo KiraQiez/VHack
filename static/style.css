@@ -1,15 +1,18 @@
 /* Google Fonts - Poppins */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
 }
+
 body {
   min-height: 100%;
   background: #e3f2fd;
 }
+
 nav {
   position: fixed;
   top: 0;
@@ -21,22 +24,26 @@ nav {
   background: #fff;
   box-shadow: 0 0 1px rgba(0, 0, 0, 0.1);
 }
+
 nav .logo {
   display: flex;
   align-items: center;
   margin: 0 24px;
 }
+
 .logo .menu-icon {
   color: #333;
   font-size: 24px;
   margin-right: 14px;
   cursor: pointer;
 }
+
 .logo .logo-name {
   color: #333;
   font-size: 22px;
   font-weight: 500;
 }
+
 nav .sidebar {
   position: fixed;
   top: 0;
@@ -48,9 +55,11 @@ nav .sidebar {
   box-shadow: 0 5px 1px rgba(0, 0, 0, 0.1);
   transition: all 0.4s ease;
 }
+
 nav.open .sidebar {
   left: 0;
 }
+
 .sidebar .sidebar-content {
   display: flex;
   height: 100%;
@@ -58,9 +67,11 @@ nav.open .sidebar {
   justify-content: space-between;
   padding: 30px 16px;
 }
+
 .sidebar-content .list {
   list-style: none;
 }
+
 .list .nav-link {
   display: flex;
   align-items: center;
@@ -69,23 +80,37 @@ nav.open .sidebar {
   border-radius: 8px;
   text-decoration: none;
 }
+
 .lists .nav-link:hover {
   background-color: #4070f4;
 }
+
 .nav-link .icon {
   margin-right: 14px;
   font-size: 20px;
   color: #707070;
 }
+
 .nav-link .link {
   font-size: 16px;
   color: #707070;
   font-weight: 400;
 }
+
 .lists .nav-link:hover .icon,
 .lists .nav-link:hover .link {
   color: #fff;
 }
+
+.list.active .nav-link {
+  background-color: #4070f4;
+}
+
+.list.active .icon,
+.list.active .link {
+  color: #fff;
+}
+
 .overlay {
   position: fixed;
   top: 0;
@@ -97,11 +122,13 @@ nav.open .sidebar {
   transition: all 0.4s ease;
   background: rgba(0, 0, 0, 0.3);
 }
-nav.open ~ .overlay {
+
+nav.open~.overlay {
   opacity: 1;
   left: 260px;
   pointer-events: auto;
 }
+
 .form-container {
   width: 450px;
   background: #fff;
@@ -114,15 +141,18 @@ nav.open ~ .overlay {
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
 .form-container h2 {
   margin-bottom: 20px;
   color: #333;
 }
+
 .input-box {
   position: relative;
   width: 100%;
   margin-bottom: 15px;
 }
+
 .input-box i {
   position: absolute;
   top: 50%;
@@ -131,6 +161,7 @@ nav.open ~ .overlay {
   font-size: 18px;
   color: #707070;
 }
+
 .input-box input {
   width: 100%;
   padding: 12px 10px 12px 40px;
@@ -139,9 +170,11 @@ nav.open ~ .overlay {
   font-size: 14px;
   outline: none;
 }
+
 .input-box input:focus {
   border-color: #4070f4;
 }
+
 .btn {
   width: 100%;
   padding: 12px;
@@ -153,17 +186,74 @@ nav.open ~ .overlay {
   cursor: pointer;
   transition: 0.3s;
 }
+
 .btn:hover {
   background: #2856c0;
 }
+
 p {
   margin-top: 10px;
   font-size: 14px;
 }
+
 p a {
   color: #4070f4;
   text-decoration: none;
 }
+
 p a:hover {
   text-decoration: underline;
+}
+
+/* Ensure the dashboard content is centered and well-spaced */
+.content {
+  max-width: 1200px;
+  margin: 70px auto;
+  padding: 20px;
+}
+
+/* Flexbox layout for chart and map */
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+/* Ensure equal width for both sections */
+.col-md-6 {
+  flex: 1;
+  min-width: 400px;
+}
+
+/* Card Styling */
+.card {
+  border-radius: 15px;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Weather Analytics Chart */
+#weatherChart {
+  width: 100% !important;
+  height: 300px !important;
+}
+
+/* Map Styling */
+#map {
+  height: 300px;
+  width: 100%;
+  border-radius: 10px;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
 }
