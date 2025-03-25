@@ -30,6 +30,10 @@ def analytics():
 def insights():
     return render_template("insights.html")
 
+@app.route("/crop")
+def crop():
+    return render_template("crop.html")
+
 # API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
 def get_weather_data():
