@@ -26,9 +26,9 @@ def index():
 def analytics():
     return render_template("analytics.html")
 
-@app.route("/insights")
-def insights():
-    return render_template("insights.html")
+@app.route("/chatbot")
+def chatbot():
+    return render_template("chatbot.html")
 
 @app.route("/crop")
 def crop():
