@@ -1,3 +1,4 @@
+# ----------------- Your Original app.py Code -----------------
 from flask import Flask, render_template, request, jsonify
 import requests
 import google.generativeai as genai
@@ -37,6 +38,11 @@ def chatbot():
 @app.route("/crop")
 def crop():
     return render_template("crop.html")
+
+@app.route("/irrigation")
+def irrigation():
+    return render_template("irrigation.html")
+
 
 # API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
@@ -126,6 +132,79 @@ def chat():
     user_message = request.json.get("message")
     response = get_agriculture_response(user_message)
     return jsonify({"reply": response})
+
+# ----------------- Irrigation Guidance Code (Appended) -----------------
+
+# Mock Route for Testing (Keep This)
+@app.route("/get_irrigation")
+def get_irrigation():
+    location = request.args.get("location")
+    crop = request.args.get("crop")
+    soil = request.args.get("soil")
+
+    # Mock response for demonstration
+    response = {
+        "location": location,
+        "crop": crop,
+        "soil": soil,
+        "water_amount": 20,  # Example value in mm
+        "rain": True  # Example rain forecast
+    }
+    return jsonify(response)
+
+# Function to calculate irrigation needs
+def calculate_irrigation(weather_data, crop_type):
+    crop_water_needs = {
+        "Rice": 7,
+        "Corn": 5,
+        "Wheat": 4
+    }
+    water_need = crop_water_needs.get(crop_type, 5)
+
+    # Extract weather details
+    precipitation = weather_data['daily']['precipitation_sum'][0]
+    temperature = weather_data['daily']['temperature_2m_mean'][0]
+    humidity = weather_data['daily']['relative_humidity_2m_mean'][0]
+
+    # Soil moisture estimation (simplified)
+    estimated_soil_moisture = max(0, (humidity / 100) * (100 - temperature))  
+
+    # Water to apply = water need - (rainfall + soil moisture contribution)
+    water_to_apply = max(0, water_need - (precipitation + (estimated_soil_moisture / 10)))
+
+    if precipitation > 5:
+        recommendation = "No irrigation needed. Rain is sufficient."
+    elif water_to_apply < 2:
+        recommendation = "Minimal irrigation needed. Consider skipping today."
+    else:
+        recommendation = f"Apply {round(water_to_apply, 2)} mm of water."
+
+    return {
+        "temperature": temperature,
+        "humidity": humidity,
+        "precipitation": precipitation,
+        "soil_moisture": round(estimated_soil_moisture, 2),
+        "water_to_apply": round(water_to_apply, 2),
+        "recommendation": recommendation
+    }
+
+# Advanced Route with Weather Data (Add This)
+@app.route('/get_irrigation_advice', methods=["GET"])
+def get_irrigation_advice():
+    latitude = request.args.get("lat", 3.1390, type=float)
+    longitude = request.args.get("lng", 101.6869, type=float)
+    crop_type = request.args.get("crop", "Rice")
+
+    # Fetch weather data
+    weather_data = fetch_weather(latitude, longitude)
+    if 'daily' not in weather_data:
+        return jsonify({"error": "Failed to fetch weather data"}), 500
+
+    # Calculate irrigation
+    irrigation_advice = calculate_irrigation(weather_data, crop_type)
+    return jsonify(irrigation_advice)
+
+# ----------------- End of Appended Code -----------------
 
 if __name__ == "__main__":
     app.run(debug=True)
