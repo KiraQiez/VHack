@@ -26,6 +26,10 @@ def index():
 def analytics():
     return render_template("analytics.html")
 
+@app.route("/weather")
+def weather():
+    return render_template("weather.html")
+
 @app.route("/chatbot")
 def chatbot():
     return render_template("chatbot.html")

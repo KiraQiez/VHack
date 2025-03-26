@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crop Health - AI Farming Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Boxicons -->
+    <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Scripts -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script> -->
+    <title>Weather Forecast</title>
+
+</head>
+
+<body>
+    <nav>
+        <div class="logo">
+            <i class="bx bx-menu menu-icon"></i>
+            <span class="logo-name">PlantLab</span>
+        </div>
+        <div class="sidebar">
+            <div class="logo">
+                <i class="bx bx-menu menu-icon"></i>
+                <span class="logo-name">PlantLab</span>
+            </div>
+            <div class="sidebar-content">
+                <ul class="lists">
+                    <li class="list"><a href="{{ url_for('index') }}" class="nav-link"><i
+                                class="bx bx-home-alt icon"></i><span class="link">Home</span></a></li>
+                    <li class="list"><a href="{{ url_for('weather') }}" class="nav-link"><i
+                                class="bx bx-cloud icon"></i><span class="link">Weather</span></a></li>
+                    <li class="list active"><a href="{{ url_for('crop') }}" class="nav-link"><i
+                                class="bx bx-camera icon"></i><span class="link">Crop Health</span></a></li>
+                    <li class="list"><a href="#" class="nav-link"><i class="bx bx-water icon"></i><span
+                                class="link">Irrigation</span></a></li>
+                    <li class="list"><a href="{{ url_for('analytics') }}" class="nav-link"><i
+                                class="bx bx-bar-chart-alt-2 icon"></i><span class="link">Analytics</span></a></li>
+                    <li class="list"><a href="#" class="nav-link"><i class="bx bx-bell icon"></i><span
+                                class="link">Insights</span></a></li>
+                    <li class="list"><a href="#" class="nav-link"><i class="bx bx-user icon"></i><span
+                                class="link">Profile</span></a></li>
+                </ul>
+                <div class="bottom-content">
+                    <li class="list"><a href="#" class="nav-link"><i class="bx bx-cog icon"></i><span
+                                class="link">Settings</span></a></li>
+                    <li class="list"><a href="#" class="nav-link"><i class="bx bx-log-out icon"></i><span
+                                class="link">Logout</span></a></li>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container mt-5">
+            <h2 class="text-center mb-4 fw-bold">Weather</h2>
+
+            <div class="container mt-4">
+                <div class="row">
+                    <!-- State & Town Dropdown -->
+                    <div class="col-md-6">
+                        <div class="card shadow p-4">
+                            <h5 class="card-title">Select Location</h5>
+                            <div class="mb-3">
+                                <label for="stateDropdown" class="form-label">State</label>
+                                <select id="stateDropdown" class="form-select">
+                                    <option value="">Select a state</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="stateDropdown" class="form-label">State</label>
+                                <select id="townDropdown" class="form-select">
+                                    <option value="">Select a town</option>
+                                </select>
+                            </div>
+                            <button id="getForecast" class="btn btn-primary" disabled>Get Forecast</button>
+                        </div>
+                    </div>
+
+                    <!-- <button id="getForecast" class="btn btn-primary">Get Forecast</button> -->
+                    <!-- Weather Forecast Display -->
+                    <div class="col-md-6">
+                        <div class="card shadow p-4">
+                            <h5 class="card-title">Weather Forecast</h5>
+                            <div id="weatherResult"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+        </div>
+    </section>
+    <script>
+        const states = [
+            { id: "LOCATION:1", name: "JOHOR" },
+            { id: "LOCATION:2", name: "KEDAH" },
+            { id: "LOCATION:3", name: "KELANTAN" },
+            { id: "LOCATION:4", name: "KUALA LUMPUR" },
+            { id: "LOCATION:5", name: "LABUAN" },
+            { id: "LOCATION:6", name: "MELAKA" },
+            { id: "LOCATION:7", name: "NEGERI SEMBILAN" },
+            { id: "LOCATION:8", name: "PAHANG" },
+            { id: "LOCATION:9", name: "PULAU PINANG" },
+            { id: "LOCATION:10", name: "PERAK" },
+            { id: "LOCATION:11", name: "PERLIS" },
+            { id: "LOCATION:12", name: "PUTRAJAYA" },
+            { id: "LOCATION:13", name: "SABAH" },
+            { id: "LOCATION:14", name: "SARAWAK" },
+            { id: "LOCATION:15", name: "SELANGOR" },
+            { id: "LOCATION:16", name: "TERENGGANU" }
+        ];
+
+        function populateStateDropdown() {
+            let dropdown = document.getElementById("stateDropdown");
+            states.forEach(state => {
+                let option = document.createElement("option");
+                option.value = state.id;
+                option.textContent = state.name;
+                dropdown.appendChild(option);
+            });
+        }
+
+        async function fetchTownsByState(stateId) {
+            let response = await fetch("fetch_towns.php?stateId=" + stateId);
+            let towns = await response.json();
+
+            let townDropdown = document.getElementById("townDropdown");
+            townDropdown.innerHTML = "<option value=''>Select a town</option>";
+
+            if (towns.error) {
+                townDropdown.innerHTML = `<option value="">${towns.error}</option>`;
+                return;
+            }
+
+            towns.forEach(town => {
+                let option = document.createElement("option");
+                option.value = town.id;
+                option.textContent = town.name;
+                townDropdown.appendChild(option);
+            });
+        }
+
+        async function fetchWeatherForecast(townId) {
+            let response = await fetch("fetch_forecast.php?locationId=" + townId);
+            let data = await response.json();
+
+            let weatherResult = document.getElementById("weatherResult");
+            weatherResult.innerHTML = "";
+            weatherResult.style.display = "block";
+
+            if (data.error) {
+                weatherResult.innerHTML = `<p>${data.error}</p>`;
+                return;
+            }
+
+            data.forEach(entry => {
+                let weatherInfo = document.createElement("div");
+                let message = "";
+                let alertClass = "";
+
+                let formattedDate = entry.date.split("T")[0]; // Extract only YYYY-MM-DD
+                let weather = entry.weather.trim(); // Trim spaces
+
+                switch (weather) {
+                    case "No rain":
+                        alertClass = "alert-success";
+                        message = "No rain forecasted on this day. Please water your farm accordingly.";
+                        break;
+                    case "Thunderstorms":
+                        alertClass = "alert-danger";
+                        message = "Thunderstorm forecasted. Stay inside, watering your farm may not be needed today.";
+                        break;
+                    default:
+                        alertClass = "alert-warning";
+                        message = "No specific forecast available. Stay tuned.";
+                }
+
+                weatherInfo.className = `alert ${alertClass}`;
+                weatherInfo.setAttribute("role", "alert");
+                weatherInfo.innerHTML = `<strong>${formattedDate}</strong>: ${weather} - ${message}`;
+
+                weatherResult.appendChild(weatherInfo);
+            });
+
+        }
+
+
+        document.getElementById("stateDropdown").addEventListener("change", function () {
+            let selectedState = this.value;
+            document.getElementById("townDropdown").innerHTML = "<option value=''>Select a town</option>";
+            document.getElementById("getForecast").disabled = true;
+            document.getElementById("weatherResult").style.display = "none";
+
+            if (selectedState) {
+                fetchTownsByState(selectedState);
+            }
+        });
+
+        document.getElementById("townDropdown").addEventListener("change", function () {
+            let selectedTown = this.value;
+            document.getElementById("getForecast").disabled = !selectedTown;
+        });
+
+        document.getElementById("getForecast").addEventListener("click", function () {
+            let selectedTown = document.getElementById("townDropdown").value;
+            if (selectedTown) {
+                fetchWeatherForecast(selectedTown);
+            }
+        });
+
+
+        window.onload = populateStateDropdown;
+    </script>
+
+
+</body>
+
+</html>
