@@ -5,21 +5,23 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI Chatbot</title>
+  <title>PlantLab - AI Chatbot</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <!-- CSS -->
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   <style>
-  
-    .title {
+      .title {
       text-align: center;
       margin-top: 20px;
       margin-bottom: -30px;
     }
 
-    /* General Chatbox Styling */
     .chatbox {
-      width: 100%;
-      max-width: 1000px; /* Expanded chatbox */
+      width: 90%;
+      max-width: 1000px;
+      height: 90vh; 
+      max-height: 600px;
       margin: 20px auto;
       padding: 20px;
       background: #ffffff;
@@ -28,6 +30,7 @@
       box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
       display: flex;
       flex-direction: column;
+      overflow-y: auto;
     }
     
     /* Messages Container */
@@ -128,18 +131,19 @@
       transform: scale(1.05);
     }
     
-    /* Mobile Responsiveness */
-    @media (max-width: 768px) {
+    @media screen and (max-width: 768px) {
       .chatbox {
-        width: 90%;
+        width: 95%;
+        height: 70vh;
+        padding: 15px;
       }
+    }
     
-      .messages {
-        height: 300px;
-      }
-    
-      .message {
-        max-width: 85%;
+    @media screen and (max-width: 480px) {
+      .chatbox {
+        width: 98%;
+        height: 60vh;
+        padding: 10px;
       }
     }
     
