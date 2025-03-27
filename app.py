@@ -2,6 +2,7 @@
 from flask import Flask, render_template, request, jsonify
 import requests
 import google.generativeai as genai
+import datetime
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
@@ -268,6 +269,77 @@ def get_irrigation_advice():
     
     return jsonify(advice)
 
+# WEATHER - IQMAL
+MET_TOKEN = "31baf53255cd39bbe37efa2463824e9b60273431"
+API_URL_FORECAST = "https://api.met.gov.my/v2.1/data"
+API_URL_LOC = "https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN"
+
+@app.route('/fetch_towns', methods=['GET'])
+def fetch_towns():
+    state_id = request.args.get("stateId")
+
+    if not state_id:
+        return jsonify({"error": "No state selected"}), 400
+
+    headers = {"Authorization": f"METToken {MET_TOKEN}"}
+    response = requests.get(API_URL_LOC, headers=headers)
+
+    if response.status_code == 200:
+        data = response.json()
+
+        if "results" not in data or not data["results"]:
+            return jsonify({"error": "No towns found"}), 404
+
+        # Filter towns by selected state
+        towns = [
+            {"id": entry["id"], "name": entry["name"]}
+            for entry in data["results"]
+            if entry["locationrootid"] == state_id
+        ]
+
+        return jsonify(towns)
+
+    return jsonify({"error": f"Failed to fetch towns (HTTP Code: {response.status_code})"}), response.status_code
+
+@app.route('/fetch_forecast', methods=['GET'])
+def fetch_forecast():
+    location_id = request.args.get('locationId')
+    if not location_id:
+        return jsonify({"error": "No town selected"}), 400
+
+    today_date = datetime.date.today().strftime("%Y-%m-%d")
+    params = {
+        "datasetid": "FORECAST",
+        "datacategoryid": "GENERAL",
+        "locationid": location_id,
+        "start_date": today_date,
+        "end_date": today_date
+    }
+
+    headers = {"Authorization": f"METToken {MET_TOKEN}"}
+
+    response = requests.get(API_URL_FORECAST, headers=headers, params=params)
+    
+    if response.status_code != 200:
+        return jsonify({"error": f"Failed to fetch forecast (HTTP Code: {response.status_code})"}), response.status_code
+    
+    data = response.json()
+    
+    if "results" not in data or not data["results"]:
+        return jsonify({"error": "No forecast data found"})
+    
+    # Filter results to include only FSIGW
+    filtered_results = [entry for entry in data["results"] if entry.get("datatype") == "FSIGW"]
+    
+    if not filtered_results:
+        return jsonify({"error": "No significant weather data (FSIGW) found"})
+    
+    forecast_data = [{
+        "date": entry["date"],
+        "weather": entry["value"]
+    } for entry in filtered_results]
+    
+    return jsonify(forecast_data)
 
 # ----------------- End of Appended Code -----------------
 
