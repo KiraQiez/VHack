@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PlantLab - Crop Health</title>
+  <title>PlantLab - Irrigation</title>
   <!-- Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <!-- Custom CSS -->
@@ -124,13 +124,14 @@
       fetch(`/get_irrigation?location=${location}&crop=${crop}&soil=${soil}`)
         .then(response => response.json())
         .then(data => {
-          document.getElementById("result-location").textContent = location;
-          document.getElementById("result-crop").textContent = crop;
-          document.getElementById("result-soil").textContent = soil;
-          document.getElementById("water-amount").textContent = `${data.water_amount} mm`;
-          document.getElementById("rain-forecast").textContent = data.rain ? "Yes" : "No";
+            document.getElementById("result-location").textContent = location;
+            document.getElementById("result-crop").textContent = crop;
+            document.getElementById("result-soil").textContent = soil;
+            document.getElementById("water-amount").textContent = `${data.water_amount} mm`;
+            document.getElementById("rain-forecast").textContent = data.rain ? "Yes" : "No";
         })
         .catch(err => console.error("Error:", err));
+
     });
   </script>
 </body>

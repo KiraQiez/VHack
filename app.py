@@ -135,20 +135,38 @@ def chat():
 
 # ----------------- Irrigation Guidance Code (Appended) -----------------
 
-# Mock Route for Testing (Keep This)
 @app.route("/get_irrigation")
 def get_irrigation():
     location = request.args.get("location")
     crop = request.args.get("crop")
     soil = request.args.get("soil")
 
-    # Mock response for demonstration
+    # Use fixed coordinates or convert location to lat/lng (enhance later)
+    latitude, longitude = 3.1390, 101.6869  # Replace with dynamic lookup if needed
+
+    # Fetch real weather data
+    weather_data = fetch_weather(latitude, longitude)
+
+    # Validate response
+    if 'daily' not in weather_data:
+        return jsonify({"error": "Failed to fetch weather data"}), 500
+
+    # Extract weather info
+    precipitation = weather_data['daily']['precipitation_sum'][0]
+
+    # Define rain forecast logic (rain if > 1 mm)
+    is_rain = precipitation > 1
+
+    # Define water amount logic (example)
+    water_amount = max(0, 20 - precipitation)  # 20 mm base water need
+
+    # Proper response
     response = {
         "location": location,
         "crop": crop,
         "soil": soil,
-        "water_amount": 20,  # Example value in mm
-        "rain": True  # Example rain forecast
+        "water_amount": round(water_amount, 2),
+        "rain": is_rain
     }
     return jsonify(response)
 
