@@ -57,104 +57,100 @@
       </div>
     </nav>
 
-  <section class="content">
-    <div class="container mt-5">
-      <h2 class="text-center mb-4 fw-bold">Irrigation Guidance System</h2>
-
-      <div class="row">
-        <div class="col-md-6">
-          <div class="card shadow p-4">
-            <h5 class="card-title">🌱 Select Farm Details</h5>
-            <form id="irrigation-form">
-              <label for="location">Location:</label>
-              <input type="text" id="location" class="form-control" placeholder="Enter location..." required><br>
-
-              <label for="crop-type">Crop Type:</label>
-              <select id="crop-type" class="form-select">
-                <option value="wheat">Wheat</option>
-                <option value="corn">Corn</option>
-                <option value="rice">Rice</option>
-              </select><br>
-
-              <label for="soil-type">Soil Type:</label>
-              <select id="soil-type" class="form-select">
-                <option value="sandy">Sandy</option>
-                <option value="loamy">Loamy</option>
-                <option value="clay">Clay</option>
-              </select><br>
-
-              <button type="submit" class="btn btn-primary">Get Recommendation</button>
-            </form>
-          </div>
-        </div>
-
-        <div class="col-md-6">
-          <div class="card shadow p-4">
-            <h5 class="card-title">📊 Irrigation Recommendation</h5>
-            <p><strong>Location:</strong> <span id="result-location">-</span></p>
-            <p><strong>Crop Type:</strong> <span id="result-crop">-</span></p>
-            <p><strong>Soil Type:</strong> <span id="result-soil">-</span></p>
-            <p><strong>Water Amount:</strong> <span id="water-amount">-</span></p>
-            <p><strong>Rain Forecast:</strong> <span id="rain-forecast">-</span></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <script>
-    const navBar = document.querySelector("nav"),menuBtns = document.querySelectorAll(".menu-icon"),overlay = document.querySelector(".overlay");
-
-    menuBtns.forEach((menuBtn) => {
-    menuBtn.addEventListener("click", () => {
-        navBar.classList.toggle("open");
-    });
-    });
-    overlay.addEventListener("click", () => {
-    navBar.classList.remove("open");
-    });
-
-    // Handle Form Submission
-    document.getElementById("irrigation-form").addEventListener("submit", function (e) {
-    e.preventDefault();  // Prevent page reload
+    <section class="content">
+        <div class="container mt-5">
+          <h2 class="text-center mb-4 fw-bold">Irrigation Guidance System</h2>
     
-    const location = document.getElementById("location").value;
-    const crop = document.getElementById("crop-type").value;
-    const soil = document.getElementById("soil-type").value;
-
-    // Clear previous results
-    document.getElementById("result-location").textContent = "-";
-    document.getElementById("result-crop").textContent = "-";
-    document.getElementById("result-soil").textContent = "-";
-    document.getElementById("water-amount").textContent = "-";
-    document.getElementById("rain-forecast").textContent = "-";
-
-    fetch(`/get_irrigation?location=${location}&crop=${crop}&soil=${soil}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (data.error) {
-                alert(`Error: ${data.error}`);
+          <div class="row">
+            <div class="col-md-6">
+              <div class="card shadow p-4">
+                <h5 class="card-title">🌱 Select Farm Details</h5>
+                <form id="irrigation-form">
+                  <label for="location">Location:</label>
+                  <select id="location" class="form-select" required>
+                    <option value="" disabled selected>Select farm location</option>
+                  </select><br>
+    
+                  <label for="crop-type">Crop Type:</label>
+                  <select id="crop-type" class="form-select">
+                    <option value="wheat">Wheat</option>
+                    <option value="corn">Corn</option>
+                    <option value="rice">Rice</option>
+                  </select><br>
+    
+                  <label for="soil-type">Soil Type:</label>
+                  <select id="soil-type" class="form-select">
+                    <option value="sandy">Sandy</option>
+                    <option value="loamy">Loamy</option>
+                    <option value="clay">Clay</option>
+                  </select><br>
+    
+                  <button type="submit" class="btn btn-primary">Get Recommendation</button>
+                </form>
+              </div>
+            </div>
+    
+            <div class="col-md-6">
+              <div class="card shadow p-4">
+                <h5 class="card-title">📊 Irrigation Recommendation</h5>
+                <p><strong>Location:</strong> <span id="result-location">-</span></p>
+                <p><strong>Crop Type:</strong> <span id="result-crop">-</span></p>
+                <p><strong>Soil Type:</strong> <span id="result-soil">-</span></p>
+                <p><strong>Water Amount:</strong> <span id="water-amount">-</span></p>
+                <p><strong>Rain Forecast:</strong> <span id="rain-forecast">-</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    
+      <script>
+        // Fetch Farm Locations
+        function fetchFarmLocations() {
+          fetch("/get_farm_locations?state=Malaysia")
+            .then(response => response.json())
+            .then(data => {
+              const locationSelect = document.getElementById("location");
+              if (data.error) {
+                alert(data.error);
                 return;
-            }
-            // Update DOM with fetched data
-            document.getElementById("result-location").textContent = location;
-            document.getElementById("result-crop").textContent = crop;
-            document.getElementById("result-soil").textContent = soil;
-            document.getElementById("water-amount").textContent = `${data.water_amount} mm`;
-            document.getElementById("rain-forecast").textContent = data.rain ? "Yes" : "No";
-        })
-        .catch(err => {
-            console.error("Error:", err);
-            alert("Failed to fetch irrigation data. Please try again.");
+              }
+              data.forEach(farm => {
+                const option = document.createElement("option");
+                option.value = `${farm.lat},${farm.lng}`;
+                option.text = farm.name;
+                locationSelect.appendChild(option);
+              });
+            })
+            .catch(err => console.error("Error fetching locations:", err));
+        }
+    
+        // Form Submission
+        document.getElementById("irrigation-form").addEventListener("submit", function (e) {
+          e.preventDefault();
+          const location = document.getElementById("location").value;
+          const crop = document.getElementById("crop-type").value;
+          const soil = document.getElementById("soil-type").value;
+    
+          fetch(`/get_irrigation?location=${location}&crop=${crop}&soil=${soil}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.error) {
+                alert(data.error);
+                return;
+              }
+              document.getElementById("result-location").textContent = data.location;
+              document.getElementById("result-crop").textContent = data.crop;
+              document.getElementById("result-soil").textContent = data.soil;
+              document.getElementById("water-amount").textContent = `${data.water_amount} mm`;
+              document.getElementById("rain-forecast").textContent = data.rain ? "Yes" : "No";
+            })
+            .catch(err => console.error("Error:", err));
         });
-});
-
-  </script>
+    
+        // Initialize on Page Load
+        fetchFarmLocations();
+      </script>
 </body>
 
 </html>
