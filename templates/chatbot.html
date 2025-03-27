@@ -1,245 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PlantLab - AI Chatbot</title>
-  <!-- Bootstrap CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <!-- CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <style>
-      .title {
-      text-align: center;
-      margin-top: 20px;
-      margin-bottom: -30px;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlantLab - AI Chatbot</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .title {
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: -30px;
+      }
 
-    .chatbox {
-      width: 90%;
-      max-width: 1000px;
-      height: 90vh; 
-      max-height: 600px;
-      margin: 20px auto;
-      padding: 20px;
-      background: #ffffff;
-      border: 2px solid #ddd;
-      border-radius: 12px;
-      box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-    
-    /* Messages Container */
-    .messages {
-      height: 600px;
-      overflow-y: auto;
-      padding: 15px;
-      background: #f8f9fa;
-      border-radius: 8px;
-      border-bottom: 2px solid #ccc;
-      text-align: left;
-      font-size: 14px;
-      scroll-behavior: smooth;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    /* Scrollbar Styling */
-    .messages::-webkit-scrollbar {
-      width: 6px;
-    }
-    
-    .messages::-webkit-scrollbar-thumb {
-      background: #bbb;
-      border-radius: 6px;
-    }
-    
-    .messages::-webkit-scrollbar-track {
-      background: #f1f1f1;
-    }
-    
-    /* Chat Messages */
-    .message {
-      padding: 10px 15px;
-      margin: 8px 0;
-      border-radius: 18px;
-      max-width: 75%;
-      font-size: 15px;
-      line-height: 1.5;
-      word-wrap: break-word;
-      display: inline-block;
-    }
-    
-    /* User Message */
-    .user-message {
-      background: #007bff;
-      color: white;
-      align-self: flex-end;
-      text-align: right;
-    }
-    
-    /* Bot Message */
-    .bot-message {
-      background: #e9ecef;
-      color: black;
-      align-self: flex-start;
-      text-align: left;
-    }
-    
-    /* Input Box */
-    .input-box {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 15px;
-    }
-    
-    /* Input Field */
-    .input-box input {
-      flex-grow: 1;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-      background: #f8f9fa;
-      transition: 0.3s;
-    }
-    
-    .input-box input:focus {
-      border-color: #007bff;
-    }
-    
-    /* Send Button */
-    .input-box button {
-      background: #28a745;
-      color: white;
-      padding: 12px 18px;
-      font-size: 16px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-    
-    .input-box button:hover {
-      background: #218838;
-      transform: scale(1.05);
-    }
-    
-    @media screen and (max-width: 768px) {
       .chatbox {
-        width: 95%;
-        height: 70vh;
+        width: 90%;
+        max-width: 1000px;
+        height: 90vh; 
+        max-height: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #ffffff;
+        border: 2px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+      }
+      
+      .messages {
+        height: 600px;
+        overflow-y: auto;
         padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-bottom: 2px solid #ccc;
+        text-align: left;
+        font-size: 14px;
+        scroll-behavior: smooth;
+        display: flex;
+        flex-direction: column;
       }
-    }
-    
-    @media screen and (max-width: 480px) {
-      .chatbox {
-        width: 98%;
-        height: 60vh;
-        padding: 10px;
+      
+      .messages::-webkit-scrollbar {
+        width: 6px;
       }
-    }
-    
-  </style>
-  <!-- Boxicons CSS -->
-  <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-</head>
+      
+      .messages::-webkit-scrollbar-thumb {
+        background: #bbb;
+        border-radius: 6px;
+      }
+      
+      .messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      
+      .message {
+        padding: 10px 15px;
+        margin: 8px 0;
+        border-radius: 18px;
+        max-width: 75%;
+        font-size: 15px;
+        line-height: 1.5;
+        word-wrap: break-word;
+        display: inline-block;
+      }
+      
+      .user-message {
+        background: #007bff;
+        color: white;
+        align-self: flex-end;
+        text-align: right;
+      }
+      
+      .bot-message {
+        background: #e9ecef;
+        color: black;
+        align-self: flex-start;
+        text-align: left;
+      }
+      
+      .input-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      
+      .input-box input {
+        flex-grow: 1;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 16px;
+        outline: none;
+        background: #f8f9fa;
+        transition: 0.3s;
+      }
+      
+      .input-box input:focus {
+        border-color: #007bff;
+      }
+      
+      .input-box button {
+        background: #28a745;
+        color: white;
+        padding: 12px 18px;
+        font-size: 16px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+      }
+      
+      .input-box button:hover {
+        background: #218838;
+        transform: scale(1.05);
+      }
+      
+      @media screen and (max-width: 768px) {
+        .chatbox {
+          width: 95%;
+          height: 70vh;
+          padding: 15px;
+        }
+      }
+      
+      @media screen and (max-width: 480px) {
+        .chatbox {
+          width: 98%;
+          height: 60vh;
+          padding: 10px;
+        }
+      }
+      
+    </style>
+    <!-- Boxicons CSS -->
+    <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  </head>
 
-<body>
-  <!-- Sidebar -->
-  <nav>
-    <div class="logo">
-      <i class="bx bx-menu menu-icon"></i>
-      <span class="logo-name">PlantLab</span>
-    </div>
-    <div class="sidebar">
+  <body>
+    <nav>
       <div class="logo">
         <i class="bx bx-menu menu-icon"></i>
         <span class="logo-name">PlantLab</span>
       </div>
-      <div class="sidebar-content">
-        <ul class="lists">
-          <li class="list"><a href="{{ url_for('index') }}" class="nav-link"><i class="bx bx-home-alt icon"></i><span class="link">Home</span></a></li>
-          <li class="list"><a href="{{ url_for('weather') }}" class="nav-link"><i class="bx bx-cloud icon"></i><span class="link">Weather</span></a></li>
-          <li class="list"><a href="{{ url_for('crop') }}" class="nav-link"><i class="bx bx-camera icon"></i><span class="link">Crop Health</span></a></li>
-          <li class="list"><a href="{{ url_for('irrigation') }}" class="nav-link"><i class="bx bx-water icon"></i><span class="link">Irrigation</span></a></li>
-          <li class="list"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="bx bx-bar-chart-alt-2 icon"></i><span class="link">Analytics</span></a></li>
-          <li class="list active"><a href="{{ url_for('chatbot') }}" class="nav-link"><i class="bx bx-conversation icon"></i><span class="link">Chatbot</span></a></li>
-        </ul>
-        <div class="bottom-content">
-          <li class="list"><a href="#" class="nav-link"><i class="bx bx-user icon"></i><span class="link">Profile</span></a></li>
-          <li class="list"><a href="#" class="nav-link"><i class="bx bx-cog icon"></i><span class="link">Settings</span></a></li>
+      <div class="sidebar">
+        <div class="logo">
+          <i class="bx bx-menu menu-icon"></i>
+          <span class="logo-name">PlantLab</span>
+        </div>
+        <div class="sidebar-content">
+          <ul class="lists">
+            <li class="list"><a href="{{ url_for('index') }}" class="nav-link"><i class="bx bx-home-alt icon"></i><span class="link">Home</span></a></li>
+            <li class="list"><a href="{{ url_for('weather') }}" class="nav-link"><i class="bx bx-cloud icon"></i><span class="link">Weather</span></a></li>
+            <li class="list"><a href="{{ url_for('crop') }}" class="nav-link"><i class="bx bx-camera icon"></i><span class="link">Crop Health</span></a></li>
+            <li class="list"><a href="{{ url_for('irrigation') }}" class="nav-link"><i class="bx bx-water icon"></i><span class="link">Irrigation</span></a></li>
+            <li class="list"><a href="{{ url_for('analytics') }}" class="nav-link"><i class="bx bx-bar-chart-alt-2 icon"></i><span class="link">Analytics</span></a></li>
+            <li class="list active"><a href="{{ url_for('chatbot') }}" class="nav-link"><i class="bx bx-conversation icon"></i><span class="link">Chatbot</span></a></li>
+          </ul>
+          <div class="bottom-content">
+            <li class="list"><a href="#" class="nav-link"><i class="bx bx-user icon"></i><span class="link">Profile</span></a></li>
+            <li class="list"><a href="#" class="nav-link"><i class="bx bx-cog icon"></i><span class="link">Settings</span></a></li>
+          </div>
         </div>
       </div>
-    </div>
-  </nav>
+    </nav>
 
-  <!-- Main Content -->
-  <section class="content">
-    <div class="container">
-      <h2 class="title text-center mb-4 fw-bold">🌱 AI-Powered Chatbot</h2><br>
+    <section class="content">
+      <div class="container">
+        <h2 class="title text-center mb-4 fw-bold">🌱 AI-Powered Chatbot</h2><br>
 
-      <div class="chatbox">
-        <div class="messages" id="chatMessages"></div>
-        <div class="input-box">
-            <input type="text" id="userInput" placeholder="Hello! How can I assist you with farming today? 🌱" />
-            <button onclick="sendMessage()">Send</button>
-        </div>
-    </div>
-    </div>
-  </section>
+        <div class="chatbox">
+          <div class="messages" id="chatMessages"></div>
+          <div class="input-box">
+              <input type="text" id="userInput" placeholder="Hello! How can I assist you with farming today? 🌱" />
+              <button onclick="sendMessage()">Send</button>
+          </div>
+      </div>
+      </div>
+    </section>
 
-  <script>
-    const navBar = document.querySelector("nav"),
-  menuBtns = document.querySelectorAll(".menu-icon"),
-  overlay = document.querySelector(".overlay");
+    <script>
+      const navBar = document.querySelector("nav"),
+        menuBtns = document.querySelectorAll(".menu-icon"),
+        overlay = document.querySelector(".overlay");
 
-menuBtns.forEach((menuBtn) => {
-  menuBtn.addEventListener("click", () => {
-    navBar.classList.toggle("open");
-  });
-});
-overlay.addEventListener("click", () => {
-  navBar.classList.remove("open");
-});
+      menuBtns.forEach((menuBtn) => {
+        menuBtn.addEventListener("click", () => {
+          navBar.classList.toggle("open");
+        });
+      });
+      overlay.addEventListener("click", () => {
+        navBar.classList.remove("open");
+      });
 
-function sendMessage() {
-  const userInput = document.getElementById("userInput").value.trim();
-  const chatMessages = document.getElementById("chatMessages");
+      function sendMessage() {
+        const userInput = document.getElementById("userInput").value.trim();
+        const chatMessages = document.getElementById("chatMessages");
 
-  if (!userInput) return;
+        if (!userInput) return;
 
-  const userMsg = `<p class="message user-message"><b>You:</b> ${userInput}</p>`;
-  chatMessages.innerHTML += userMsg;
-  document.getElementById("userInput").value = "";
+        const userMsg = `<p class="message user-message"><b>You:</b> ${userInput}</p>`;
+        chatMessages.innerHTML += userMsg;
+        document.getElementById("userInput").value = "";
 
-  fetch("/chat", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: userInput })
-  })
-    .then(response => response.json())
-    .then(data => {
-      const botMsg = `<p class="message bot-message"><b>AI:</b> ${data.reply}</p>`;
-      chatMessages.innerHTML += botMsg;
-      chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to latest message
-    })
-    .catch(error => console.error("Error:", error));
-}
-
-  </script>
-</body>
-
+        fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: userInput })
+        })
+        .then(response => response.json())
+        .then(data => {
+          const botMsg = `<p class="message bot-message"><b>AI:</b> ${data.reply}</p>`;
+          chatMessages.innerHTML += botMsg;
+          chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to latest message
+        })
+        .catch(error => console.error("Error:", error));
+      }
+    </script>
+  </body>
 </html>

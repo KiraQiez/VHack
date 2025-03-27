@@ -1,4 +1,3 @@
-# ----------------- Your Original app.py Code -----------------
 from flask import Flask, render_template, request, jsonify
 import requests
 import google.generativeai as genai
@@ -6,19 +5,6 @@ import datetime
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
-
-# Fetch Weather Data from Open-Meteo
-def fetch_weather(latitude, longitude):
-    url = "https://api.open-meteo.com/v1/forecast"
-    params = {
-        "latitude": latitude,
-        "longitude": longitude,
-        "daily": "temperature_2m_mean,precipitation_sum,relative_humidity_2m_mean",
-        "timezone": "Asia/Kuala_Lumpur"
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    return data
 
 @app.route("/")
 def index():
@@ -45,6 +31,17 @@ def irrigation():
     return render_template("irrigation.html")
 
 # ----------------- Dashboard Code (Appended) -----------------
+def fetch_weather(latitude, longitude):
+    url = "https://api.open-meteo.com/v1/forecast"
+    params = {
+        "latitude": latitude,
+        "longitude": longitude,
+        "daily": "temperature_2m_mean,precipitation_sum,relative_humidity_2m_mean",
+        "timezone": "Asia/Kuala_Lumpur"
+    }
+    response = requests.get(url, params=params)
+    data = response.json()
+    return data
 
 @app.route('/get_weather_data')
 def get_weather_data():
@@ -118,7 +115,7 @@ def get_farms():
 
     return get_farm_locations()
 
-# ----------------- Chabot Code (Appended) -----------------
+# ----------------- Chatbot Code (Appended) -----------------
 
 GEMINI_API_KEY = "AIzaSyCCMqub_m4O8umGE_Rw_iuGIDkxPBl7QKE"
 genai.configure(api_key=GEMINI_API_KEY)
@@ -140,7 +137,7 @@ def chat():
     response = get_agriculture_response(user_message)
     return jsonify({"reply": response})
 
-# ----------------- Irrigation Guidance Code (Appended) -----------------
+# ----------------- Irrigation Code (Appended) -----------------
 
 @app.route("/get_irrigation")
 def get_irrigation():
@@ -171,45 +168,30 @@ def get_irrigation():
     }
     return jsonify(response)
 
-
-# Crop Water Needs (mm/day)
 CROP_WATER_NEEDS = {
-    "rice": 7,    # High water requirement
-    "corn": 5,    # Moderate water requirement
-    "wheat": 4    # Lower water requirement
+    "rice": 7,
+    "corn": 5,
+    "wheat": 4
 }
 
-# Soil Water Retention Factor (0-1)
 SOIL_TYPE_FACTOR = {
-    "sandy": 0.3,   # Low retention
-    "loamy": 0.5,   # Medium retention
-    "clay": 0.7     # High retention
+    "sandy": 0.3,
+    "loamy": 0.5,
+    "clay": 0.7
 }
 
-# Function to calculate irrigation needs
 def calculate_irrigation(weather_data, crop_type, soil_type):
-    # Extract weather details
-    precipitation = weather_data['daily']['precipitation_sum'][0]  # mm
-    temperature = weather_data['daily']['temperature_2m_mean'][0]  # °C
-    humidity = weather_data['daily']['relative_humidity_2m_mean'][0]  # %
+    precipitation = weather_data['daily']['precipitation_sum'][0]
+    temperature = weather_data['daily']['temperature_2m_mean'][0]
+    humidity = weather_data['daily']['relative_humidity_2m_mean'][0]
 
-    # Base water need from crop type
     water_need = CROP_WATER_NEEDS.get(crop_type.lower(), 5)
-    
-    # Soil moisture estimation (humidity & soil type)
     soil_factor = SOIL_TYPE_FACTOR.get(soil_type.lower(), 0.5)
-    estimated_soil_moisture = (humidity / 100) * soil_factor * 10  # 0-10 mm
-
-    # Effective Rainfall (assuming 80% effective)
+    estimated_soil_moisture = (humidity / 100) * soil_factor * 10
     effective_rainfall = precipitation * 0.8
-    
-    # Water to apply = Crop water need - (Effective Rain + Soil Moisture)
     water_to_apply = max(0, water_need - (effective_rainfall + estimated_soil_moisture))
-
-    # Rain forecast logic
     is_rain = precipitation > 1
 
-    # Recommendation
     if precipitation >= water_need:
         recommendation = "No irrigation needed today due to sufficient rainfall."
     elif water_to_apply < 2:
@@ -217,7 +199,6 @@ def calculate_irrigation(weather_data, crop_type, soil_type):
     else:
         recommendation = f"Apply approximately {round(water_to_apply, 2)} mm of water."
 
-    # Construct explanation
     explanation = (
         f"Precipitation recorded at {precipitation} mm, with an estimated effective rainfall "
         f"of {round(effective_rainfall, 2)} mm after considering surface runoff. "
@@ -228,7 +209,6 @@ def calculate_irrigation(weather_data, crop_type, soil_type):
         f"Rain forecast: {'Yes' if is_rain else 'No'}."
     )
 
-    # ✅ **Add Debugging Logs (Print Statements)**
     print(f"[DEBUG] Precipitation: {precipitation} mm")
     print(f"[DEBUG] Temperature: {temperature} °C")
     print(f"[DEBUG] Humidity: {humidity} %")
@@ -246,13 +226,11 @@ def calculate_irrigation(weather_data, crop_type, soil_type):
         "soil_moisture": round(estimated_soil_moisture, 2),
         "effective_rainfall": round(effective_rainfall, 2),
         "water_to_apply": round(water_to_apply, 2),
-        "water_need": water_need,  # Add this line
+        "water_need": water_need,
         "recommendation": recommendation,
         "explanation": explanation
     }
 
-
-# Advanced Route with Weather Data (Add This)
 @app.route('/get_irrigation_advice', methods=["GET"])
 def get_irrigation_advice():
     latitude = request.args.get("lat", 3.1390, type=float)
@@ -264,16 +242,14 @@ def get_irrigation_advice():
     if 'daily' not in weather_data:
         return jsonify({"error": "Failed to fetch weather data"}), 500
 
-    # Calculate irrigation
     advice = calculate_irrigation(weather_data, crop_type, soil_type)
     
-    # Include rain forecast logic in response
     rain_forecast = advice['effective_rainfall'] >= (0.5 * advice['water_need'])
     advice.update({"rain_forecast": rain_forecast})
     
     return jsonify(advice)
 
-# WEATHER - IQMAL
+# ----------------- Weather Code (Appended) -----------------
 MET_TOKEN = "31baf53255cd39bbe37efa2463824e9b60273431"
 API_URL_FORECAST = "https://api.met.gov.my/v2.1/data"
 API_URL_LOC = "https://api.met.gov.my/v2.1/locations?locationcategoryid=TOWN"
@@ -294,7 +270,6 @@ def fetch_towns():
         if "results" not in data or not data["results"]:
             return jsonify({"error": "No towns found"}), 404
 
-        # Filter towns by selected state
         towns = [
             {"id": entry["id"], "name": entry["name"]}
             for entry in data["results"]
@@ -332,7 +307,6 @@ def fetch_forecast():
     if "results" not in data or not data["results"]:
         return jsonify({"error": "No forecast data found"})
     
-    # Filter results to include only FSIGW
     filtered_results = [entry for entry in data["results"] if entry.get("datatype") == "FSIGW"]
     
     if not filtered_results:

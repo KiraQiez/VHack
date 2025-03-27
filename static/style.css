@@ -1,4 +1,3 @@
-/* Google Fonts - Poppins */
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap");
 
 * {
@@ -242,20 +241,17 @@ p a:hover {
   margin-bottom: 10px;
 }
 
-/* Weather Analytics Chart */
 #weatherChart {
   width: 100% !important;
   height: 300px !important;
 }
 
-/* Map Styling */
 #map {
   height: 300px;
   width: 100%;
   border-radius: 10px;
 }
 
-/* Responsive Design */
 @media screen and (max-width: 768px) {
   .row {
     flex-direction: column;

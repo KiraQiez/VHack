@@ -1,6 +1,7 @@
 let marker;
 let userLat, userLng;
 
+// ----------------- Map Code (Appended) -----------------
 var map = L.map('map').setView([4.2105, 101.9758], 6);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -40,6 +41,7 @@ if (navigator.geolocation) {
   alert("Geolocation is not supported by your browser.");
 }
 
+// ----------------- Weather Code (Appended) -----------------
 function fetchWeatherStatistics(lat, lng) {
   console.log("[DEBUG] Fetching weather stats for:", lat, lng);
 
@@ -63,6 +65,7 @@ function fetchWeatherStatistics(lat, lng) {
     .catch(error => console.error("[ERROR] Fetching weather statistics:", error));
 }
 
+// ----------------- Navbar Code (Appended) -----------------
 const navBar = document.querySelector("nav"),
   menuBtns = document.querySelectorAll(".menu-icon"),
   overlay = document.querySelector(".overlay");
@@ -76,6 +79,7 @@ overlay.addEventListener("click", () => {
   navBar.classList.remove("open");
 });
 
+// ----------------- Map Code (Appended) -----------------
 function initializeMap(lat, lng) {
   if (!map) {
     map = L.map("map").setView([lat, lng], 10);
@@ -102,6 +106,7 @@ function addUserMarker(lat, lng) {
   console.log("[DEBUG] User location marked.");
 }
 
+// ----------------- Weather Code (Appended) -----------------
 function fetchWeatherData(lat, lng) {
   console.log("[DEBUG] Fetching weather data for:", lat, lng);
 
@@ -165,6 +170,7 @@ function fetchWeatherData(lat, lng) {
     .catch(error => console.error("[ERROR] Fetching weather data:", error));
 }
 
+// ----------------- Map Code (Appended) -----------------
 function getUserState(lat, lng) {
   console.log("[DEBUG] Getting user state...");
 
