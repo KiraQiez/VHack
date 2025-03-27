@@ -121,7 +121,6 @@
         </div>
     </div>
       <script>
-        // Fetch Farm Locations
 function fetchFarmLocations() {
   fetch("/get_farm_locations?state=Malaysia")
     .then(response => response.json())
@@ -145,7 +144,6 @@ function updateExplanation(data) {
     const explanationDiv = document.getElementById('explanation-content');
     
     if (data) {
-        // Construct the explanation text
         const explanation = `
             <p><b>🌧️ Precipitation:</b> ${data.precipitation} mm — ${data.precipitation > 1 ? "Moderate to heavy rainfall." : "Light rainfall."}</p>
             <p><b>💦 Water Need (Crop):</b> ${data.water_need} mm — Crop water requirement.</p>
@@ -167,7 +165,6 @@ function updateExplanation(data) {
     }
 }
 
-// Form Submission
 document.getElementById("irrigation-form").addEventListener("submit", function (e) {
     e.preventDefault();
     const location = document.getElementById("location").value;
@@ -181,96 +178,35 @@ document.getElementById("irrigation-form").addEventListener("submit", function (
                 alert(data.error);
                 return;
             }
-            // Update Recommendation Section
+            
             document.getElementById("result-location").textContent = location;
             document.getElementById("result-crop").textContent = crop;
             document.getElementById("result-soil").textContent = soil;
             document.getElementById("water-amount").textContent = `${data.water_to_apply} mm`;
             document.getElementById("rain-forecast").textContent = data.precipitation > 1 ? "Yes" : "No";
 
-            // Update Explanation
             updateExplanation(data);
         })
         .catch(err => console.error("Error:", err));
     });
 
-    // Initialize on Page Load
     fetchFarmLocations();
 
-    //     document.getElementById('get-irrigation-btn').addEventListener('click', function () {
-    //     const lat = document.getElementById('latitude').value;
-    //     const lng = document.getElementById('longitude').value;
-    //     const crop = document.getElementById('crop-type').value;
-    //     const soil = document.getElementById('soil-type').value;
-
-    //     fetch(`/get_irrigation_advice?lat=${lat}&lng=${lng}&crop=${crop}&soil=${soil}`)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             // Update the recommendation section
-    //             document.getElementById('irrigation-recommendation').innerText = data.recommendation;
-
-    //             // Construct the explanation text
-    //             const explanation = `
-    //                 🌦️ Precipitation: ${data.precipitation} mm<br>
-    //                 🌡️ Temperature: ${data.temperature} °C<br>
-    //                 💧 Humidity: ${data.humidity}%<br>
-    //                 🏜️ Estimated Soil Moisture: ${data.soil_moisture} mm<br>
-    //                 ☔ Effective Rainfall: ${data.effective_rainfall} mm<br>
-    //                 🚿 Final Water to Apply: ${data.water_to_apply} mm<br>
-    //                 📢 Recommendation Reason: ${data.recommendation}
-    //             `;
-    //             updateExplanation(explanation);
-    //         })
-    //         .catch(err => console.error('Error:', err));
-    //      });
-    //   </script>
+    const navBar = document.querySelector("nav"),
+      menuBtns = document.querySelectorAll(".menu-icon"),
+      overlay = document.querySelector(".overlay");
+    
+    menuBtns.forEach((menuBtn) => {
+      menuBtn.addEventListener("click", () => {
+        navBar.classList.toggle("open");
+      });
+    });
+    overlay.addEventListener("click", () => {
+      navBar.classList.remove("open");
+    });
 
      <!-- script for recommendation reason -->
-     <script>
-    //     function fetchIrrigationAdvice() {
-    //         const lat = 2.529249;
-    //         const lng = 111.9133217;
-    //         const crop = "corn";
-    //         const soil = "sandy";
-
-    //         fetch(`/get_irrigation_advice?lat=${lat}&lng=${lng}&crop=${crop}&soil=${soil}`)
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 document.getElementById("farm-details").innerHTML = 
-    //                     `<h4>🌾 Farm Details</h4>
-    //                     <p><b>Location:</b> ${lat}, ${lng}</p>
-    //                     <p><b>Crop:</b> ${crop}</p>
-    //                     <p><b>Soil:</b> ${soil}</p>`;
-
-    //                 document.getElementById("irrigation-recommendation").innerHTML = 
-    //                     `<h4>💧 Irrigation Recommendation</h4>
-    //                     <p><b>Water to Apply:</b> ${data.water_to_apply} mm</p>
-    //                     <p><b>Recommendation:</b> ${data.recommendation}</p>`;
-
-    //                 // Build Explanation
-    //                 const explanation = `
-    //                     <p><b>🌧️ Precipitation:</b> ${data.precipitation} mm — ${data.precipitation > 1 ? "Moderate to heavy rainfall." : "Very light rainfall."}</p>
-    //                     <p><b>💦 Water Need (Crop):</b> ${data.water_need} mm — Crop water requirement.</p>
-    //                     <p><b>🧱 Soil Factor:</b> ${data.soil_factor} — Water retention capability.</p>
-    //                     <p><b>🌡️ Estimated Soil Moisture:</b> ${data.soil_moisture} mm — Based on humidity and soil type.</p>
-    //                     <p><b>🌧️ Effective Rainfall:</b> ${data.effective_rainfall} mm — 80% of precipitation.</p>
-    //                     <p><b>🧮 Final Water to Apply Calculation:</b><br>
-    //                     Water needed = Crop water need - (Effective Rainfall + Soil Moisture)<br>
-    //                     ${data.water_need} - (${data.effective_rainfall} + ${data.soil_moisture}) = ${data.water_to_apply} mm</p>
-    //                     <p><b>✅ Final Water to Apply:</b> ${data.water_to_apply} mm — Correct!</p>
-    //                     <p><b>🌧️ Rain Forecast Logic:</b><br>
-    //                     Rain forecast is <b>${data.rain_forecast ? "Yes" : "No"}</b><br>
-    //                     ${data.rain_forecast ? "Effective rainfall is sufficient." : "Effective rainfall is insufficient."}</p>
-    //                     <p><b>✔️ Conclusion:</b> ${data.recommendation}</p>
-    //                 `;
-    //                 document.getElementById("explanation-content").innerHTML = explanation;
-    //             })
-    //             .catch(err => console.error(err));
-    //     }
-
-    //     document.addEventListener("DOMContentLoaded", fetchIrrigationAdvice);
-    //</script>
-    
+  </script>
 </body>
 
 </html>
