@@ -105,7 +105,7 @@
       </section>
     
       <script>
-        // Fetch Farm Locations
+        
         function fetchFarmLocations() {
           fetch("/get_farm_locations?state=Malaysia")
             .then(response => response.json())
@@ -125,7 +125,6 @@
             .catch(err => console.error("Error fetching locations:", err));
         }
     
-        // Form Submission
         document.getElementById("irrigation-form").addEventListener("submit", function (e) {
           e.preventDefault();
           const location = document.getElementById("location").value;
@@ -148,8 +147,20 @@
             .catch(err => console.error("Error:", err));
         });
     
-        // Initialize on Page Load
         fetchFarmLocations();
+
+        const navBar = document.querySelector("nav"),
+          menuBtns = document.querySelectorAll(".menu-icon"),
+          overlay = document.querySelector(".overlay");
+
+        menuBtns.forEach((menuBtn) => {
+          menuBtn.addEventListener("click", () => {
+            navBar.classList.toggle("open");
+          });
+        });
+        overlay.addEventListener("click", () => {
+          navBar.classList.remove("open");
+        });
       </script>
 </body>
 

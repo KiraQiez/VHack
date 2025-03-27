@@ -1,16 +1,13 @@
-let marker; // Store user marker
-let userLat, userLng; // 🔹 Declare global variables
+let marker;
+let userLat, userLng;
 
-// Initialize the map (Malaysia center, zoom 6)
 var map = L.map('map').setView([4.2105, 101.9758], 6);
 
-// Load OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18,
   attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
-// ✅ Get User Location & Fetch Farms in Their State
 if (navigator.geolocation) {
   navigator.geolocation.getCurrentPosition(
     (position) => {
@@ -19,7 +16,6 @@ if (navigator.geolocation) {
 
       console.log("[DEBUG] User Location:", userLat, userLng);
 
-      // Add a green pin for user location
       L.marker([userLat, userLng], {
         icon: L.icon({
           iconUrl: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
@@ -29,10 +25,10 @@ if (navigator.geolocation) {
         })
       }).bindPopup("📍 You are here").addTo(map);
 
-      // ✅ Get the user's state and fetch farms there
       getUserState(userLat, userLng);
       fetchWeatherData(userLat, userLng);
       fetchWeatherStatistics(userLat, userLng);
+      getFarmSize(userLat, userLng);
     },
     (error) => {
       console.error("[ERROR] Geolocation failed:", error);
@@ -54,12 +50,10 @@ function fetchWeatherStatistics(lat, lng) {
     .then(data => {
       console.log("[DEBUG] Weather Data:", data);
 
-      // Extract today's weather data
-      const avgTemp = data.daily.temperature_2m_mean[0]; // First day's temp
-      const avgHumidity = data.daily.relative_humidity_2m_mean[0]; // First day's humidity
-      const rainfall = data.daily.precipitation_sum[0]; // First day's rainfall
+      const avgTemp = data.daily.temperature_2m_mean[0];
+      const avgHumidity = data.daily.relative_humidity_2m_mean[0];
+      const rainfall = data.daily.precipitation_sum[0];
 
-      // Update HTML
       document.getElementById("avgTemp").textContent = `${avgTemp.toFixed(1)}°C`;
       document.getElementById("avgHumidity").textContent = `${avgHumidity.toFixed(1)}%`;
       document.getElementById("rainfall").textContent = `${rainfall.toFixed(1)} mm`;
@@ -82,10 +76,9 @@ overlay.addEventListener("click", () => {
   navBar.classList.remove("open");
 });
 
-// ✅ Function to initialize the map
 function initializeMap(lat, lng) {
   if (!map) {
-    map = L.map("map").setView([lat, lng], 10); // ✅ No automatic zooming
+    map = L.map("map").setView([lat, lng], 10);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map);
@@ -93,7 +86,6 @@ function initializeMap(lat, lng) {
   }
 }
 
-// ✅ Add user location marker (Green Pin)
 function addUserMarker(lat, lng) {
   if (marker) {
     map.removeLayer(marker);
@@ -110,7 +102,6 @@ function addUserMarker(lat, lng) {
   console.log("[DEBUG] User location marked.");
 }
 
-// Fetch and update weather chart
 function fetchWeatherData(lat, lng) {
   console.log("[DEBUG] Fetching weather data for:", lat, lng);
 
@@ -174,7 +165,6 @@ function fetchWeatherData(lat, lng) {
     .catch(error => console.error("[ERROR] Fetching weather data:", error));
 }
 
-// ✅ Fetch the user's state using reverse geocoding
 function getUserState(lat, lng) {
   console.log("[DEBUG] Getting user state...");
 
@@ -186,16 +176,19 @@ function getUserState(lat, lng) {
       if (data && data.address && data.address.state) {
         let userState = data.address.state;
         console.log("[DEBUG] User State:", userState);
-        fetchFarmLocations(userState); // Fetch farms in the user's state
+        document.getElementById("userState").innerHTML = userState;
+        fetchFarmLocations(userState);
       } else {
         console.warn("[WARNING] Could not determine user state.");
+        document.getElementById("userState").textContent = "Unknown State";
       }
     })
-    .catch(error => console.error("[ERROR] Reverse geocoding failed:", error));
+    .catch(error => {
+      console.error("[ERROR] Reverse geocoding failed:", error);
+      document.getElementById("userState").textContent = "Error retrieving state";
+    });
 }
 
-
-// ✅ Fetch farms in the user's state
 function fetchFarmLocations(state) {
   console.log(`[DEBUG] Fetching farms in state: ${state}`);
 
@@ -207,47 +200,42 @@ function fetchFarmLocations(state) {
         console.warn(`[WARNING] No farms found in ${state}.`);
         alert(`No farms found in ${state}.`);
       } else {
-        if (typeof userLat === "undefined" || typeof userLng === "undefined") {  // 🔹 Use global variables
+        if (typeof userLat === "undefined" || typeof userLng === "undefined") {
           console.error("[ERROR] User location (userLat, userLng) is undefined. Cannot display farms.");
         } else {
-          displayFarmsOnMap(data); // ✅ Fix: Pass the actual `data` (farms list)
+          displayFarmsOnMap(data);
+          fetchFarmSizes(data);
         }
       }
     })
     .catch(error => console.error("[ERROR] Fetching farm locations:", error));
 }
 
-// ✅ Function to update farm statistics
 function updateFarmStatistics(farms) {
   let totalFarms = farms.length;
 
-  // Update total farms count
   document.getElementById("totalFarms").textContent = totalFarms;
 
   console.log(`[DEBUG] Total Farms Displayed: ${totalFarms}`);
 }
 
-// ✅ Display farms on the map with red pins
 function displayFarmsOnMap(farms) {
   if (!map) {
     console.error("[ERROR] Map not initialized yet.");
     return;
   }
 
-  // ✅ Remove only farm markers, NOT the user marker
   map.eachLayer(layer => {
     if (layer instanceof L.Marker && layer !== marker) {
       map.removeLayer(layer);
     }
   });
 
-  // ✅ Re-add user marker if missing
   if (!marker) {
     console.warn("[WARNING] User marker missing. Re-adding...");
     addUserMarker(userLat, userLng);
   }
 
-  // ✅ Validate farm data before adding markers
   let validFarms = farms.filter(farm => farm.lat !== undefined && farm.lng !== undefined);
   let invalidFarms = farms.filter(farm => farm.lat === undefined || farm.lng === undefined);
 
@@ -255,7 +243,6 @@ function displayFarmsOnMap(farms) {
     console.warn("[WARNING] Skipping invalid farm locations:", invalidFarms);
   }
 
-  // ✅ Add farm markers
   validFarms.forEach((farm) => {
     L.marker([farm.lat, farm.lng], {
       icon: L.icon({
@@ -269,4 +256,68 @@ function displayFarmsOnMap(farms) {
 
   console.log("[DEBUG] Farms displayed on map.");
   updateFarmStatistics(validFarms);
+}
+
+function updateFarmSize(size) {
+  let farmSizeElement = document.getElementById("avgFarmSize");
+
+  farmSizeElement.classList.remove("loading");
+
+  farmSizeElement.textContent = size + " m²";
+}
+
+document.getElementById("avgFarmSize").classList.add("loading");
+
+async function fetchFarmSizes(farms) {
+  let totalSize = 0;
+  let farmCount = farms.length;
+
+  for (let farm of farms) {
+    let farmSize = await getFarmSize(farm.lat, farm.lng);
+    if (farmSize > 0) {
+      totalSize += farmSize;
+    }
+  }
+
+  let avgSize = farmCount > 0 ? (totalSize / farmCount).toFixed(2) : "N/A";
+  document.getElementById("avgFarmSize").textContent = avgSize;
+  setTimeout(() => {
+    updateFarmSize(avgSize);
+  }, 3000);
+}
+
+async function getFarmSize(lat, lng) {
+  let overpassURL = `https://overpass-api.de/api/interpreter?data=[out:json];(way["landuse"="farmland"](around:1000,${lat},${lng}););out geom;`;
+
+  try {
+    let response = await fetch(overpassURL);
+    let data = await response.json();
+
+    let totalArea = 0;
+    if (data.elements) {
+      for (let element of data.elements) {
+        if (element.geometry) {
+          totalArea += calculatePolygonArea(element.geometry);
+        }
+      }
+    }
+
+    console.log(`[DEBUG] Farm at (${lat}, ${lng}) - Size: ${totalArea} m²`);
+    return totalArea;
+  } catch (error) {
+    console.error("[ERROR] Failed to fetch farm size:", error);
+    return 0;
+  }
+}
+
+function calculatePolygonArea(points) {
+  let area = 0;
+  let j = points.length - 1;
+
+  for (let i = 0; i < points.length; i++) {
+    area += (points[j].lon + points[i].lon) * (points[j].lat - points[i].lat);
+    j = i;
+  }
+
+  return Math.abs(area / 2.0) * 111139 * 111139;
 }
