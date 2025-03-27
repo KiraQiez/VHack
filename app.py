@@ -44,27 +44,26 @@ def crop():
 def irrigation():
     return render_template("irrigation.html")
 
+# ----------------- Dashboard Code (Appended) -----------------
 
-# API: Weekly Weather Data for Charts
 @app.route('/get_weather_data')
 def get_weather_data():
     latitude = request.args.get("lat", 3.1390, type=float)
     longitude = request.args.get("lng", 101.6869, type=float)
 
-    print(f"[DEBUG] Fetching weather data for lat={latitude}, lng={longitude}")  # Debugging
+    print(f"[DEBUG] Fetching weather data for lat={latitude}, lng={longitude}") 
     weather_data = fetch_weather(latitude, longitude)
     
     return jsonify(weather_data)
 
 @app.route('/get_farm_locations')
 def get_farm_locations():
-    state = request.args.get("state")  # Get state name from frontend
+    state = request.args.get("state") 
     if not state:
         return jsonify({"error": "State name is required"}), 400
 
     osm_url = "http://overpass-api.de/api/interpreter"
 
-    # **Query to get all farmland in the specified state**
     query = f"""
     [out:json][timeout:50];
     area["name"="{state}"]->.state;
@@ -104,26 +103,33 @@ def get_farm_locations():
                 "lng": element["center"]["lon"]
             })
 
-    print(f"[DEBUG] Farms found in {state}:", farms)  # Debugging Output
+    print(f"[DEBUG] Farms found in {state}:", farms) 
 
     if not farms:
         return jsonify({"error": f"No farms found in {state}"}), 404
 
     return jsonify(farms)
 
-# Set up Google Gemini API Key
+@app.route('/get_farms')
+def get_farms():
+    state = request.args.get("state")
+    if not state:
+        return jsonify({"error": "State name is required"}), 400
+
+    return get_farm_locations()
+
+# ----------------- Chabot Code (Appended) -----------------
+
 GEMINI_API_KEY = "AIzaSyCCMqub_m4O8umGE_Rw_iuGIDkxPBl7QKE"
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Correct model name (Check from list_models output)
-MODEL_NAME = "gemini-1.5-flash-latest"  # Change based on available models
+MODEL_NAME = "gemini-1.5-flash-latest"
 
-# Function to interact with Gemini AI
 def get_agriculture_response(user_input):
     try:
-        model = genai.GenerativeModel(MODEL_NAME)  # Use correct model
-        response = model.generate_content(user_input)  # Generate response
-        return response.text  # Extract text response
+        model = genai.GenerativeModel(MODEL_NAME)  
+        response = model.generate_content(user_input)  
+        return response.text  
     except Exception as e:
         print("[ERROR] Gemini API Request Failed:", str(e))
         return f"Error: {str(e)}"
@@ -145,16 +151,15 @@ def get_irrigation():
     if not location:
         return jsonify({"error": "Location is required"}), 400
 
-    lat, lng = map(float, location.split(","))  # Get coordinates
+    lat, lng = map(float, location.split(","))  
 
-    # Fetch real weather data
     weather_data = fetch_weather(lat, lng)
 
     if 'daily' not in weather_data:
         return jsonify({"error": "Failed to fetch weather data"}), 500
 
     precipitation = weather_data['daily']['precipitation_sum'][0]
-    water_amount = max(0, 20 - precipitation)  # 20 mm base water need
+    water_amount = max(0, 20 - precipitation) 
     is_rain = precipitation > 1
 
     response = {
@@ -255,7 +260,6 @@ def get_irrigation_advice():
     crop_type = request.args.get("crop", "rice")
     soil_type = request.args.get("soil", "loamy")
 
-    # Fetch weather data
     weather_data = fetch_weather(latitude, longitude)
     if 'daily' not in weather_data:
         return jsonify({"error": "Failed to fetch weather data"}), 500

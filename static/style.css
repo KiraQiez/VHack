@@ -206,14 +206,12 @@ p a:hover {
   text-decoration: underline;
 }
 
-/* Ensure the dashboard content is centered and well-spaced */
 .content {
   max-width: 1200px;
   margin: 70px auto;
   padding: 20px;
 }
 
-/* Flexbox layout for chart and map */
 .row {
   display: flex;
   justify-content: space-between;
@@ -222,13 +220,11 @@ p a:hover {
   flex-wrap: wrap;
 }
 
-/* Ensure equal width for both sections */
 .col-md-6 {
   flex: 1;
   min-width: 400px;
 }
 
-/* Card Styling */
 .card {
   border-radius: 15px;
   padding: 20px;
@@ -287,4 +283,57 @@ p a:hover {
   text-align: center;
   font-weight: bold;
   font-size: 1.1rem;
+}
+
+.stats-container1 {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+
+.stat-card1 {
+  flex: 1 1 250px;
+  border-radius: 15px;
+  padding: 25px;
+  background: #fff;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 140px;
+  min-width: 250px;
+  max-width: 350px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+@keyframes loadingDots {
+  0% {
+    content: "Calculating";
+  }
+
+  25% {
+    content: "Calculating.";
+  }
+
+  50% {
+    content: "Calculating..";
+  }
+
+  75% {
+    content: "Calculating...";
+  }
+
+  100% {
+    content: "Calculating";
+  }
+}
+
+#avgFarmSize.loading::after {
+  content: "Calculating";
+  animation: loadingDots 1.5s infinite steps(4);
+  display: inline;
 }
