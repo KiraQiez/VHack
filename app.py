@@ -141,24 +141,22 @@ def get_irrigation():
     crop = request.args.get("crop")
     soil = request.args.get("soil")
 
-    # Use fixed coordinates or convert location to lat/lng (enhance later)
-    latitude, longitude = 3.1390, 101.6869  # Replace with dynamic lookup if needed
+    if not location or not crop or not soil:
+        return jsonify({"error": "Missing input parameters"}), 400
 
-    # Fetch real weather data
+    # Example fixed coordinates for testing
+    latitude, longitude = 3.1390, 101.6869
+
+    # Fetch weather data
     weather_data = fetch_weather(latitude, longitude)
 
-    # Validate response
     if 'daily' not in weather_data:
         return jsonify({"error": "Failed to fetch weather data"}), 500
 
-    # Extract weather info
+    # Extract weather details
     precipitation = weather_data['daily']['precipitation_sum'][0]
-
-    # Define rain forecast logic (rain if > 1 mm)
     is_rain = precipitation > 1
-
-    # Define water amount logic (example)
-    water_amount = max(0, 20 - precipitation)  # 20 mm base water need
+    water_amount = max(0, 20 - precipitation)
 
     # Proper response
     response = {
@@ -169,6 +167,7 @@ def get_irrigation():
         "rain": is_rain
     }
     return jsonify(response)
+
 
 # Function to calculate irrigation needs
 def calculate_irrigation(weather_data, crop_type):
